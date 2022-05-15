@@ -250,6 +250,13 @@ int** game_life(int** field, int n, int k)
 
 int main()
 {
+	/*int n = 0;
+	cin >> n;
+	sinCons(n);
+	sinPar(n);
+	cout << piCons(n) << endl;
+	cout << piPar(n) << endl;
+	cout << numberOfPrimes(n) << endl;*/
 	//sin_func(100000000);
 	//cout << pi_arctg(100000000) << endl;
 	//cout << prime_count(1000000) << endl;
