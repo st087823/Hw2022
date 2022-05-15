@@ -70,12 +70,12 @@ double piPar(int n)
 #pragma omp section
 		{
 			for (int i = 0; i < n / 2; i++)
-				sum += func(((2 * i - 1.0) / (2 * n)));		
+				sum += func((2 * i - 1.0) / (2 * n));		
 		}
 #pragma omp section
 		{
 			for (int i = n / 2; i <= n; i++)
-				sum += func(((2 * i - 1.0) / (2 * n)));
+				sum += func((2 * i - 1.0) / (2 * n));
 		}
 	}
 	cout << "Sum: " << (4 * sum) / n << endl;
