@@ -266,7 +266,7 @@ int main()
 		arr[i] = new int[10000]{ 0 };
 	}
 	game_life(arr, 10000, 10000);
-	delete[] sin_arr;
+	delete[] sinC;
 	for (int i = 0; i < 10000; ++i)
 	{
 		delete[] arr[i];
