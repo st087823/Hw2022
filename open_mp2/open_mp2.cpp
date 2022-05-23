@@ -112,7 +112,7 @@ int numberOfPrimes(int n) {
 	double t = omp_get_wtime();
 	double quan = 0;
 
-#pragma omp parallel sections reduction(+:sum)
+#pragma omp parallel sections reduction(+:sum) //
 	{
 #pragma omp section //рассматриваем только нечет числа, раскиданные на два потока. четные сразу выкидываем из рассматрения
 		{
