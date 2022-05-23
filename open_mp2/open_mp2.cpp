@@ -65,7 +65,7 @@ double piPar(int n)
 {
 	double t = omp_get_wtime();
 	double sum = 0;
-#pragma omp parallel sections reduction(+:sum)
+#pragma omp parallel sections reduction(+:sum) //переменная sum явл-ся частной для параллельных ветвей т.е. каждая ветвь работает со своей копией  sum
 	{
 #pragma omp section
 		{
@@ -83,7 +83,7 @@ double piPar(int n)
 	return 0;
 }
 
-// [3, n]
+// проверка является ли число простым.
 bool isPrime(int n)
 {
 	if (n == 1) return false;
@@ -95,21 +95,33 @@ bool isPrime(int n)
 	return true;
 }
 
-// Вычисление числа простых чисел в интервале от 1 до n.
+int prime_count_cons(int n)
+{
+	double t = omp_get_wtime();
+	int count = 0;
+	for (int i = 1; i <= n; ++i)
+	{
+		count += isPrime(i);
+	}
+	cout << "Time cons: " << omp_get_wtime() - t << endl;
+	return count;
+}
+
+// Вычисление кол-ва простых чисел в интервале от 1 до n.
 int numberOfPrimes(int n) {
 	double t = omp_get_wtime();
 	double quan = 0;
 
 #pragma omp parallel sections reduction(+:sum)
 	{
-#pragma omp section
+#pragma omp section //рассматриваем только нечет числа, раскиданные на два потока. четные сразу выкидываем из рассматрения
 		{
-			for (int i = 3; i <= n; i += 4)
+			for (int i = 1; i <= n; i += 4)
 				(isPrime(i) ? quan += 1 : 0); //добавляем к общем количеству 1, если это простое число и 0, если это составное число
 		}
 #pragma omp section
 		{
-			for (int i = 5; i <= n; i += 4)
+			for (int i = 3; i <= n; i += 4)
 				(isPrime(i) ? quan += 1 : 0);
 		}
 	}

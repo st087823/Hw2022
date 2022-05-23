@@ -9,7 +9,18 @@ double pi = acos(-1); //задаем значение pi
 
 double* sinC = new double[10000000]; // глобальное объясление массива
 double* sinP = new double[10000000];
+void sinCons(int n)
+{
+	double t = omp_get_wtime();
+	for (int i = 0; i <= n; ++i) //при i=0 pi*i/(2n)=0   i=n: pi*i/(2n)= pi/2
+	{
+		sinC[i] = sin(pi * i / (2 * n));
+	}
+	cout << "Time sinCons: " << omp_get_wtime() - t << endl;
+}
 
+// parallel for параллелизация может автоматически подстраиваться под нужное число параллельных ветвей программы.
+// #pragma omp parallel for schedule (тип, размер)
 void sinPar(int n)
 {
 	double t = omp_get_wtime();
@@ -21,7 +32,7 @@ void sinPar(int n)
 	cout << "Time stat: " << omp_get_wtime() - t << endl;
 
 	double t1 = omp_get_wtime();
-#pragma omp parallel for schedule(dynamic, 7)
+#pragma omp parallel for schedule(dynamic, 5)
 	for (int i = 0; i <= n; ++i)
 	{
 		sinC[i] = sin(pi * i / (2.0 * n));
@@ -47,7 +58,17 @@ void sinPar(int n)
 
 
 
-
+double piCons(int n)
+{
+	double t = omp_get_wtime();
+	double sum = 0;
+	for (int i = 1; i <= n; ++i)
+	{
+		sum += func(((2 * i - 1.0) / (2 * n)));
+	}
+	cout << "Time cons: " << omp_get_wtime() - t << endl;
+	return (4 * sum) / n;
+}
 
 double func(double x)
 {
@@ -65,14 +86,16 @@ double piPar(int n)
 	}
 	cout << "Time stat: " << omp_get_wtime() - t << endl;
 
+	sum = 0;
 	double t1 = omp_get_wtime();
-#pragma omp parallel for schedule(dynamic, 7) reduction(+: sum)
+#pragma omp parallel for schedule(dynamic, 5) reduction(+: sum)
 	for (int i = 1; i <= n; ++i)
 	{
 		sum += func((double(2) * i - 1) / (double(2) * n));
 	}
 	cout << "Time dynam: " << omp_get_wtime() - t1 << endl;
 
+	sum = 0;
 	double t2 = omp_get_wtime();
 #pragma omp parallel for schedule(guided, 5) reduction(+: sum)
 	for (int i = 1; i <= n; ++i)
@@ -81,6 +104,7 @@ double piPar(int n)
 	}
 	cout << "Time guided: " << omp_get_wtime() - t2 << endl;
 
+	sum = 0;
 	double t3 = omp_get_wtime();
 	for (int i = 1; i <= n; ++i)
 	{
@@ -88,7 +112,7 @@ double piPar(int n)
 	}
 	cout << "Time posl: " << omp_get_wtime() - t3 << endl;
 
-	return sum / n;
+	return sum * 4 / n;
 }
 
 
@@ -116,14 +140,18 @@ int primePar(int n)
 	}
 	cout << "Time stat: " << omp_get_wtime() - t << endl;
 
+
+	count = 0;
 	double t1 = omp_get_wtime();
-#pragma omp parallel for schedule(dynamic, 15) reduction(+:count)
+#pragma omp parallel for schedule(dynamic, 5) reduction(+:count)
 	for (int i = 1; i <= n; i += 2)
 	{
 		prime(i) ? count += 1 : 0;
 	}
 	cout << "Time dynam: " << omp_get_wtime() - t1 << endl;
 
+
+	count = 0;
 	double t2 = omp_get_wtime();
 #pragma omp parallel for schedule(guided, 5) reduction(+:count)
 	for (int i = 1; i <= n; i += 2)
@@ -132,13 +160,14 @@ int primePar(int n)
 	}
 	cout << "Time guided: " << omp_get_wtime() - t2 << endl;
 
+	count = 0;
 	double t3 = omp_get_wtime();
 	for (int i = 1; i <= n; i += 2)
 	{
 		prime(i) ? count += 1 : 0;
 	}
 	cout << "Time cons: " << omp_get_wtime() - t3 << endl;
-	return count / 4;
+	return count;
 }
 
 
@@ -188,66 +217,6 @@ void print(int** field, int n, int k)
 }
 
 
-
-
-int** game_life(int** field, int n, int k)
-{
-	int** new_gen = new int* [n];
-	for (int i = 0; i < n; ++i)
-	{
-		new_gen[i] = new int[k] {0};
-	}
-	double t = omp_get_wtime();
-#pragma omp parallel for schedule(static, 5)
-	for (int i = 0; i < n; ++i)
-	{
-		for (int j = 0; j < k; ++j)
-		{
-			new_gen[i][j] = is_alive(field[i][j], neightbros(field, i, j, n, k));
-		}
-	}
-	cout << "Time stat: " << omp_get_wtime() - t << endl;
-	double t1 = omp_get_wtime();
-#pragma omp parallel for schedule(dynamic, 5)
-	for (int i = 0; i < n; ++i)
-	{
-		for (int j = 0; j < k; ++j)
-		{
-			new_gen[i][j] = is_alive(field[i][j], neightbros(field, i, j, n, k));
-		}
-	}
-	cout << "Time dynam: " << omp_get_wtime() - t1 << endl;
-	double t2 = omp_get_wtime();
-#pragma omp parallel for schedule(guided, 5)
-	for (int i = 0; i < n; ++i)
-	{
-		for (int j = 0; j < k; ++j)
-		{
-			new_gen[i][j] = is_alive(field[i][j], neightbros(field, i, j, n, k));
-		}
-	}
-	cout << "Time guided: " << omp_get_wtime() - t2 << endl;
-	double t3 = omp_get_wtime();
-	for (int i = 0; i < n; ++i)
-	{
-		for (int j = 0; j < k; ++j)
-		{
-			new_gen[i][j] = is_alive(field[i][j], neightbros(field, i, j, n, k));
-		}
-	}
-	cout << "Time posl: " << omp_get_wtime() - t3 << endl;
-
-	for (int i = 0; i < n; ++i)
-	{
-		for (int j = 0; j < k; ++j)
-		{
-			new_gen[i][j] /= 4;
-		}
-	}
-
-	return new_gen;
-}
-
 int main()
 {
 	/*int n = 0;
@@ -265,7 +234,6 @@ int main()
 	{
 		arr[i] = new int[10000]{ 0 };
 	}
-	game_life(arr, 10000, 10000);
 	delete[] sinC;
 	for (int i = 0; i < 10000; ++i)
 	{
